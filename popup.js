@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const tabContents = document.querySelectorAll('.tab-content');
   const toast = document.getElementById('toast');
   const intervalSettings = document.getElementById('intervalSettings');
+  const testDomainInput = document.getElementById('testDomain');
+  const testSingleDomainButton = document.getElementById('testSingleDomain');
+  const testSavedDomainsButton = document.getElementById('testSavedDomains');
+  const clearTestResultButton = document.getElementById('clearTestResult');
+  const testOutput = document.getElementById('testOutput');
+  const cookieCount = document.getElementById('cookieCount');
 
   // 显示提示信息
   function showToast(message, isError = false) {
@@ -281,5 +287,249 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
       updateStatus('error', error.message);
     }
+  });
+
+  // 格式化 Cookie 数据
+  function formatCookie(cookie) {
+    // 提取 Cookie 的字段信息
+    const fields = new Set();
+    Object.keys(cookie).forEach(key => {
+      if (cookie[key] !== undefined && cookie[key] !== '') {
+        fields.add(key);
+      }
+    });
+
+    return {
+      fields: Array.from(fields),
+      secure: cookie.secure,
+      httpOnly: cookie.httpOnly,
+      expirationDate: cookie.expirationDate
+    };
+  }
+
+  // 获取单个域名的 Cookie
+  async function getCookiesForDomain(domain) {
+    try {
+      const url = domain.startsWith('http') ? domain : `http://${domain}`;
+      const cookies = await chrome.cookies.getAll({ url });
+      return {
+        success: true,
+        domain,
+        cookies: cookies,
+        cookieInfo: cookies.map(formatCookie)
+      };
+    } catch (error) {
+      return {
+        success: false,
+        domain,
+        error: error.message
+      };
+    }
+  }
+
+  // 创建域名结果 DOM 元素
+  function createDomainResultElement(result) {
+    const div = document.createElement('div');
+    div.className = 'domain-result' + (result.success ? '' : ' error');
+
+    if (result.success) {
+      // 生成 Cookie 字符串
+      function generateCookieString(cookies) {
+        return cookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+      }
+
+      // 获取所有 Cookie 字段名称
+      const cookieFields = [...new Set(result.cookieInfo.flatMap(cookie => Object.keys(cookie)))];
+      
+      div.innerHTML = `
+        <div class="domain-header">
+          <div class="domain-summary">
+            <span class="domain-name">${result.domain}</span>
+            <span class="cookie-count">${result.cookies.length} 个 Cookie</span>
+            <span class="cookie-fields">字段：${cookieFields.join('、')}</span>
+          </div>
+          <button class="copy-button" title="复制 Cookie">复制</button>
+        </div>
+      `;
+
+      // 添加复制功能
+      const copyButton = div.querySelector('.copy-button');
+      copyButton.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const cookieString = generateCookieString(result.cookies);
+        try {
+          await navigator.clipboard.writeText(cookieString);
+          showToast('Cookie 已复制到剪贴板');
+        } catch (error) {
+          showToast('复制失败: ' + error.message, true);
+        }
+      });
+    } else {
+      div.innerHTML = `
+        <div class="domain-header">
+          <div class="domain-summary">
+            <div class="domain-title">
+              <span class="domain-name">${result.domain}</span>
+              <span class="error-message">获取失败: ${result.error}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    return div;
+  }
+
+  // 分析 Cookie 数据
+  function analyzeCookies(cookies) {
+    const stats = {
+      fields: new Set(),
+      secureCount: 0,
+      httpOnlyCount: 0,
+      sessionCount: 0,
+      persistentCount: 0
+    };
+
+    cookies.forEach(cookie => {
+      // 收集所有字段
+      Object.keys(cookie).forEach(key => {
+        if (cookie[key] !== undefined && cookie[key] !== '') {
+          stats.fields.add(key);
+        }
+      });
+
+      // 统计安全属性
+      if (cookie.secure) stats.secureCount++;
+      if (cookie.httpOnly) stats.httpOnlyCount++;
+
+      // 统计过期时间
+      if (cookie.expirationDate) {
+        stats.persistentCount++;
+      } else {
+        stats.sessionCount++;
+      }
+    });
+
+    return {
+      ...stats,
+      fields: Array.from(stats.fields)
+    };
+  }
+
+  // 格式化字段统计信息
+  function formatFieldStats(fields) {
+    return fields.join(', ');
+  }
+
+  // 更新测试结果显示
+  function updateTestResult(results) {
+    testOutput.innerHTML = '';
+    const resultArray = Array.isArray(results) ? results : [results];
+    
+    // 计算总体统计
+    let totalDomains = resultArray.length;
+    let successDomains = resultArray.filter(r => r.success).length;
+    let totalCookies = resultArray.reduce((sum, r) => sum + (r.success ? r.cookies.length : 0), 0);
+
+    // 更新统计信息
+    cookieCount.innerHTML = `
+      <div class="test-summary">
+        <div class="summary-item">域名总数<br>${totalDomains} 个</div>
+        <div class="summary-item">成功数<br>${successDomains} 个</div>
+        <div class="summary-item">总 Cookie 数<br>${totalCookies} 个</div>
+      </div>
+    `;
+
+    // 创建结果列表容器
+    const resultList = document.createElement('div');
+    resultList.className = 'test-result-list';
+
+    // 添加每个域名的结果
+    resultArray.forEach(result => {
+      const resultCard = createDomainResultElement(result);
+      resultList.appendChild(resultCard);
+    });
+
+    testOutput.appendChild(resultList);
+  }
+
+  // 测试单个域名
+  testSingleDomainButton.addEventListener('click', async () => {
+    const domain = testDomainInput.value.trim();
+    if (!domain) {
+      showToast('请输入要测试的域名', true);
+      return;
+    }
+
+    if (!isValidDomain(domain)) {
+      showToast('域名格式无效', true);
+      return;
+    }
+
+    testSingleDomainButton.disabled = true;
+    try {
+      const result = await getCookiesForDomain(domain);
+      updateTestResult(result);
+    } catch (error) {
+      // 创建错误结果对象
+      const errorResult = {
+        success: false,
+        domain: domain,
+        error: error.message
+      };
+      updateTestResult(errorResult);
+    } finally {
+      testSingleDomainButton.disabled = false;
+    }
+  });
+
+  // 测试所有保存的域名
+  testSavedDomainsButton.addEventListener('click', async () => {
+    const config = await chrome.storage.local.get(['domains']);
+    if (!config.domains) {
+      showToast('没有保存的域名', true);
+      return;
+    }
+
+    const domains = config.domains.split('\n').map(d => d.trim()).filter(Boolean);
+    if (domains.length === 0) {
+      showToast('没有保存的域名', true);
+      return;
+    }
+
+    testSavedDomainsButton.disabled = true;
+    try {
+      const results = await Promise.all(
+        domains.map(async (domain) => {
+          try {
+            return await getCookiesForDomain(domain);
+          } catch (error) {
+            return {
+              success: false,
+              domain: domain,
+              error: error.message
+            };
+          }
+        })
+      );
+      updateTestResult(results);
+    } catch (error) {
+      // 如果是整体执行出错，显示为单个错误结果
+      const errorResult = {
+        success: false,
+        domain: '测试执行错误',
+        error: error.message
+      };
+      updateTestResult([errorResult]);
+    } finally {
+      testSavedDomainsButton.disabled = false;
+    }
+  });
+
+  // 清除测试结果
+  clearTestResultButton.addEventListener('click', () => {
+    testOutput.textContent = '';
+    cookieCount.textContent = '';
+    testDomainInput.value = '';
   });
 }); 

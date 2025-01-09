@@ -197,13 +197,20 @@
       display: flex;
       margin-bottom: 20px;
       border-bottom: 1px solid #eee;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .tabs::-webkit-scrollbar {
+      display: none;
     }
     .tab {
-      padding: 12px 24px;
+      padding: 12px 20px;
       cursor: pointer;
       border-bottom: 2px solid transparent;
       color: #666;
       transition: all 0.2s;
+      white-space: nowrap;
     }
     .tab:hover {
       color: #4CAF50;
@@ -243,6 +250,221 @@
     .container {
       position: relative;
     }
+    .test-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .test-actions button {
+      flex: 1;
+    }
+    .test-domain-input {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .test-domain-input input {
+      flex: 1;
+    }
+    .test-domain-input button {
+      white-space: nowrap;
+    }
+    .test-result {
+      background: #f8f9fa;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      padding: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .test-result pre {
+      margin: 0;
+    }
+    .cookie-count {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .domain-result {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    .domain-header {
+      padding: 2px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .domain-summary {
+      flex: 1;
+      min-width: 0;
+      margin-right: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+    .domain-name {
+      font-weight: 500;
+      color: #333;
+      font-size: 13px;
+      line-height: 1;
+      padding: 1px 0;
+    }
+    .cookie-count {
+      color: #666;
+      font-size: 12px;
+      line-height: 1;
+      padding: 1px 0;
+    }
+    .cookie-fields {
+      color: #666;
+      font-size: 12px;
+      line-height: 1;
+      padding: 1px 0;
+      white-space: normal;
+      word-break: break-all;
+    }
+    .copy-button {
+      padding: 4px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      height: fit-content;
+    }
+    .copy-button:hover {
+      background-color: #45a049;
+    }
+    .error-message {
+      color: #f44336;
+      font-size: 12px;
+    }
+    .domain-stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .domain-stats span {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+    .domain-toggle {
+      padding: 4px 12px;
+      border-radius: 4px;
+      border: 1px solid #2196F3;
+      background-color: transparent;
+      color: #2196F3;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .domain-toggle:hover {
+      background-color: #2196F3;
+      color: white;
+    }
+    .domain-content {
+      display: none;
+      padding: 12px;
+      border-top: 1px solid #e0e0e0;
+    }
+    .domain-content.show {
+      display: block;
+    }
+    .cookie-stats {
+      display: grid;
+      gap: 8px;
+    }
+    .cookie-field {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    .cookie-field-label {
+      font-weight: 500;
+      color: #666;
+      width: 100px;
+    }
+    .cookie-field-value {
+      color: #333;
+    }
+    .cookie-detail {
+      margin-top: 12px;
+      padding: 12px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    .cookie-detail pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .error .domain-name {
+      color: #f44336;
+    }
+    .error .domain-stats {
+      color: #f44336;
+    }
+    .test-summary {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+    .summary-item {
+      flex: 1;
+      padding: 10px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      color: #333;
+      font-size: 14px;
+      text-align: center;
+      word-break: break-word;
+      line-height: 1.4;
+    }
+    .test-result-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 0;
+    }
+    .domain-result {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .domain-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .domain-stats span {
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      background-color: #e3f2fd;
+      color: #1976d2;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -251,6 +473,7 @@
     <div class="tabs">
       <div class="tab active" data-tab="main">主页</div>
       <div class="tab" data-tab="settings">设置</div>
+      <div class="tab" data-tab="test">测试</div>
       <div class="tab" data-tab="history">历史</div>
     </div>
 
@@ -304,6 +527,23 @@
       </div>
 
       <button id="saveSettings">保存设置</button>
+    </div>
+
+    <div id="test" class="tab-content">
+      <div class="test-actions">
+        <button id="testSavedDomains">测试所有保存的域名</button>
+        <button id="clearTestResult">清除结果</button>
+      </div>
+
+      <div class="test-domain-input">
+        <input type="text" id="testDomain" placeholder="输入要测试的域名">
+        <button id="testSingleDomain">测试</button>
+      </div>
+
+      <div class="test-result">
+        <div class="cookie-count" id="cookieCount"></div>
+        <pre id="testOutput"></pre>
+      </div>
     </div>
 
     <div id="history" class="tab-content">
