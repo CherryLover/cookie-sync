@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 更新历史记录列表
   function updateHistoryList(history = []) {
     historyList.innerHTML = '';
-    history.slice(-10).reverse().forEach(item => {
+    history.slice(-50).reverse().forEach(item => {
       const div = document.createElement('div');
       div.className = `history-item ${item.status}`;
       div.innerHTML = `
@@ -159,8 +159,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const history = (await chrome.storage.local.get('syncHistory')).syncHistory || [];
     history.push(record);
     
-    // 只保留最近20条记录
-    if (history.length > 20) {
+    // 只保留最近50条记录
+    if (history.length > 50) {
       history.shift();
     }
     
