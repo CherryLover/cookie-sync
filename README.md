@@ -30,12 +30,10 @@
 
 ## 页面截图
 
-<div style="display: flex; justify-content: space-between;">
-  <img src="screenshots/home.png" width="24%" alt="主页" />
-  <img src="screenshots/settings.png" width="24%" alt="设置" />
-  <img src="screenshots/test.png" width="24%" alt="测试" />
-  <img src="screenshots/history.png" width="24%" alt="历史" />
-</div>
+| 主页 | 设置 | 测试 | 历史记录 |
+|:---:|:---:|:---:|:---:|
+| <img src="screenshots/home.png" width="220" alt="主页" /> | <img src="screenshots/settings.png" width="220" alt="设置" /> | <img src="screenshots/test.png" width="220" alt="测试" /> | <img src="screenshots/history.png" width="220" alt="历史" /> |
+| 输入目标域名和服务器地址 | 配置同步间隔和通知选项 | 测试域名连通性 | 查看同步历史记录 |
 
 ## 权限说明
 
