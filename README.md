@@ -28,6 +28,13 @@
 4. 点击"同步"按钮即可手动触发同步
 5. 插件会自动在后台运行，每小时自动同步一次
 
+## 页面截图
+
+![主页](screenshots/home.png)
+![设置](screenshots/settings.png)
+![测试](screenshots/test.png)
+![历史](screenshots/history.png)
+
 ## 权限说明
 
 本扩展需要以下权限：
