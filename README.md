@@ -30,10 +30,12 @@
 
 ## 页面截图
 
-![主页](screenshots/home.png)
-![设置](screenshots/settings.png)
-![测试](screenshots/test.png)
-![历史](screenshots/history.png)
+<div style="display: flex; justify-content: space-between;">
+  <img src="screenshots/home.png" width="24%" alt="主页" />
+  <img src="screenshots/settings.png" width="24%" alt="设置" />
+  <img src="screenshots/test.png" width="24%" alt="测试" />
+  <img src="screenshots/history.png" width="24%" alt="历史" />
+</div>
 
 ## 权限说明
 
