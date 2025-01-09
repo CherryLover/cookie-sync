@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Cookie 同步工具</title>
+  <style>
+    body {
+      width: 400px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    textarea, input:not([type="checkbox"]) {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    textarea {
+      height: 120px;
+      resize: vertical;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #f8f9fa;
+      font-size: 14px;
+    }
+    label {
+      font-weight: 500;
+      margin-bottom: 5px;
+      display: block;
+    }
+    .settings {
+      border-top: 1px solid #eee;
+      margin-top: 15px;
+      padding-top: 15px;
+    }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      position: relative;
+    }
+    .settings-row label {
+      font-weight: normal;
+      margin: 0;
+      user-select: none;
+    }
+    .settings-row input[type="number"] {
+      width: 80px;
+    }
+    /* 自定义复选框样式 */
+    .settings-row input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    .checkbox-wrapper:hover {
+      background-color: #f0f0f0;
+    }
+    .checkmark {
+      position: relative;
+      height: 20px;
+      width: 20px;
+      background-color: #fff;
+      border: 2px solid #4CAF50;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .settings-row input[type="checkbox"]:checked ~ .checkbox-wrapper .checkmark {
+      background-color: #4CAF50;
+    }
+    .checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+      left: 6px;
+      top: 2px;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .settings-row input[type="checkbox"]:checked ~ .checkbox-wrapper .checkmark:after {
+      display: block;
+    }
+    .settings-row input[type="checkbox"]:focus ~ .checkbox-wrapper {
+      outline: 2px solid #4CAF50;
+      outline-offset: 2px;
+    }
+    .history {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+    .history-item {
+      padding: 8px;
+      border-radius: 4px;
+      background-color: #f8f9fa;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .history-item.success {
+      border-left: 4px solid #4CAF50;
+    }
+    .history-item.error {
+      border-left: 4px solid #f44336;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      border-bottom-color: #4CAF50;
+      color: #4CAF50;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .settings-interval {
+      margin-left: 28px;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0.5;
+      pointer-events: none;
+      transition: all 0.3s;
+    }
+    .settings-interval.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .toast {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #4CAF50;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+    }
+    .toast.error {
+      background-color: #f44336;
+    }
+    .container {
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toast" id="toast"></div>
+    <div class="tabs">
+      <div class="tab active" data-tab="main">主页</div>
+      <div class="tab" data-tab="settings">设置</div>
+      <div class="tab" data-tab="history">历史</div>
+    </div>
+
+    <div id="main" class="tab-content active">
+      <div>
+        <label for="domains">目标域名（每行一个）</label>
+        <textarea id="domains" placeholder="例如：&#13;&#10;example.com&#13;&#10;http://example.org"></textarea>
+      </div>
+      
+      <div>
+        <label for="server">服务器地址</label>
+        <input type="text" id="server" placeholder="https://your-server.com/api/cookies">
+      </div>
+
+      <button id="syncButton">立即同步</button>
+
+      <div class="status">
+        <div>状态：<span id="status">未同步</span></div>
+        <div>上次同步：<span id="lastSync">从未同步</span></div>
+      </div>
+    </div>
+
+    <div id="settings" class="tab-content">
+      <div class="settings-row">
+        <input type="checkbox" id="autoSync">
+        <label class="checkbox-wrapper" for="autoSync">
+          <span class="checkmark"></span>
+          <span>启用自动同步</span>
+        </label>
+      </div>
+
+      <div class="settings-interval" id="intervalSettings">
+        <label for="syncInterval">同步间隔（分钟）：</label>
+        <input type="number" id="syncInterval" min="1" max="1440" value="60">
+      </div>
+
+      <div class="settings-row">
+        <input type="checkbox" id="notifications">
+        <label class="checkbox-wrapper" for="notifications">
+          <span class="checkmark"></span>
+          <span>启用桌面通知</span>
+        </label>
+      </div>
+
+      <button id="saveSettings">保存设置</button>
+    </div>
+
+    <div id="history" class="tab-content">
+      <div id="historyList">
+        <!-- 历史记录将在这里动态添加 -->
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 
