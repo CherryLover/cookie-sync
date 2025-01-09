@@ -98,7 +98,7 @@ async function syncCookies(retryCount = 0) {
     });
 
     if (!response.ok) {
-      throw new Error(`服务器响应错误: ${response.status} ${response.statusText}`);
+      throw new Error(`服务器连接失败: ${response.status} ${response.statusText}`);
     }
 
     // 更新同步状态
@@ -122,6 +122,17 @@ async function syncCookies(retryCount = 0) {
   } catch (error) {
     console.error('同步失败:', error);
 
+    // 处理不同类型的错误，显示更友好的错误信息
+    let errorMessage = error.message;
+    let statusError = error.message;
+    if (error.message.includes('Failed to fetch')) {
+      statusError = '无法连接到服务器';
+      errorMessage = '无法连接到服务器，请检查：\n1. 服务器地址是否正确\n2. 服务器是否在线\n3. 网络连接是否正常';
+    } else if (error.message.includes('NetworkError')) {
+      statusError = '网络连接错误';
+      errorMessage = '网络连接错误，请检查网络连接是否正常';
+    }
+
     // 检查是否需要重试
     if (retryCount < MAX_RETRIES) {
       await delay(RETRY_DELAYS[retryCount]);
@@ -131,19 +142,26 @@ async function syncCookies(retryCount = 0) {
     // 更新错误状态
     await chrome.storage.local.set({
       syncStatus: 'error',
-      lastError: error.message
+      lastError: statusError
     });
 
     // 发送失败通知
-    sendNotification('Cookie 同步失败', `同步失败: ${error.message}\n已重试 ${retryCount} 次`);
+    sendNotification('Cookie 同步失败', `${errorMessage}\n已重试 ${retryCount} 次`);
   }
 }
 
 // 监听来自 popup 的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'manualSync') {
-    syncCookies();
-    sendResponse({ status: 'started' });
+    // 使用传入的配置进行同步
+    chrome.storage.local.set({
+      domains: request.config.domains,
+      serverUrl: request.config.serverUrl
+    }).then(() => {
+      syncCookies();
+      sendResponse({ status: 'started' });
+    });
+    return true;
   } else if (request.action === 'updateSettings') {
     settings = { ...settings, ...request.settings };
     updateAlarm();

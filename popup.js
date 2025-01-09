@@ -226,7 +226,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 手动同步按钮点击事件
   syncButton.addEventListener('click', async () => {
     try {
-      // 验证并保存配置
+      // 取消之前的延迟保存
+      clearTimeout(saveTimeout);
+      
+      // 立即保存配置
       if (!await saveConfig()) {
         return;
       }
@@ -236,7 +239,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       syncButton.disabled = true;
 
       // 发送同步请求给后台脚本
-      chrome.runtime.sendMessage({ action: 'manualSync' }, (response) => {
+      chrome.runtime.sendMessage({ 
+        action: 'manualSync',
+        config: {
+          domains: domainsTextarea.value.trim(),
+          serverUrl: serverInput.value.trim()
+        }
+      }, (response) => {
         if (response.status === 'started') {
           // 定期检查同步状态
           const checkStatus = setInterval(async () => {
