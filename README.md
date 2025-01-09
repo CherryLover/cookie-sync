@@ -1,4 +1,4 @@
-# Cookie Sync Chrome Extension
+# Cookie Sync Chrome Extension <img src="icons/icon48.png" alt="项目图标" align="right" />
 
 一个用于自动同步指定域名 Cookie 到服务器的 Chrome 浏览器扩展。
 
